@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/nocturne-43e735a4-2da6-4573-952a-6a2eba0717b5/styles.css">
+<script src="_ds/nocturne-43e735a4-2da6-4573-952a-6a2eba0717b5/_ds_bundle.js"></script>
+<script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+<style>@keyframes grassSway{0%{transform:skewX(-6deg)}100%{transform:skewX(6deg)}}@keyframes leafFall{0%{transform:translate(0,0) rotate(0);opacity:0}10%{opacity:1}100%{transform:translate(26px,92px) rotate(260deg);opacity:0}}@keyframes plantSway{0%{transform:rotate(-1.6deg)}100%{transform:rotate(1.6deg)}}@keyframes leafFlutter{0%{transform:rotate(-6deg)}100%{transform:rotate(6deg)}}@keyframes canopyBreathe{0%,100%{transform:scale(1)}50%{transform:scale(1.015)}}@keyframes glowPulse{0%,100%{opacity:.45}50%{opacity:1}}@keyframes firefly{0%{transform:translate(0,0);opacity:0}20%{opacity:1}50%{transform:translate(8px,-14px)}80%{opacity:.9}100%{transform:translate(-6px,-26px);opacity:0}}@keyframes seedPulse{0%,100%{filter:drop-shadow(0 0 2px var(--color-accent))}50%{filter:drop-shadow(0 0 9px var(--color-accent))}}@media (prefers-reduced-motion:reduce){[data-cat] *{animation:none!important}}</style>
+<style>body{margin:0;background:color-mix(in srgb,#161826 72%,#000);} a{color:#9184d9} a:hover{color:#b5abfc} *::-webkit-scrollbar{display:none}</style>
+</helmet>
+<div style="min-height:100vh;padding:40px 32px 56px;display:flex;flex-direction:column;gap:28px;font-family:var(--font-body);color:var(--color-text)">
+  <div style="display:flex;flex-wrap:wrap;align-items:flex-end;gap:16px 32px;max-width:860px">
+    <div style="display:flex;flex-direction:column;gap:4px;flex:1 1 320px">
+      <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent)">Final prototype · Nocturne</div>
+      <div style="font-size:25px;font-weight:500;letter-spacing:-.015em">Dusk — daily habits</div>
+      <div style="font-size:13px;color:color-mix(in srgb,var(--color-text) 60%,transparent);text-wrap:pretty">Switch between Home and Today with the tab bar. Tap a habit to complete it; on Today, hold one to edit it. The tree on Home grows with your best streak.</div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button onClick="{{ simulate }}" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;font:500 13px var(--font-body);color:var(--color-accent);background:transparent;border:1px solid var(--color-accent);border-radius:var(--radius-md);padding:8px 12px" style-hover="background:color-mix(in srgb,var(--color-accent) 12%,transparent)"><i class="ph ph-bell-ringing" style="font-size:15px"></i>Simulate reminder</button>
+      <button onClick="{{ newDay }}" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;font:500 13px var(--font-body);color:var(--color-text);background:transparent;border:1px solid var(--color-divider);border-radius:var(--radius-md);padding:8px 12px" style-hover="background:color-mix(in srgb,var(--color-text) 7%,transparent)"><i class="ph ph-sun-horizon" style="font-size:15px"></i>Start next day</button>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:10px;flex:none;align-self:flex-start">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:6px 8px;width:390px;flex-wrap:wrap">
+      <div style="font-size:11px;color:color-mix(in srgb,var(--color-text) 55%,transparent);white-space:nowrap">App</div>
+      <div style="display:flex;align-items:center;gap:3px;flex-wrap:wrap">
+        
+        <span style="font-size:11px;color:color-mix(in srgb,var(--color-text) 55%,transparent);margin-right:4px;white-space:nowrap">Preview growth</span>
+        <sc-for list="{{ catChips }}" as="c" hint-placeholder-count="6">
+          <button onClick="{{ c.pick }}" style="min-height:24px;padding:0 7px;border-radius:6px;border:1px solid {{ c.bd }};background:transparent;color:{{ c.col }};font:500 11px var(--font-body);cursor:pointer;font-variant-numeric:tabular-nums" style-hover="background:color-mix(in srgb,var(--color-text) 7%,transparent)">{{ c.label }}</button>
+        </sc-for>
+      </div>
+    </div>
+    <div style="width:390px;height:844px;border-radius:56px;padding:11px;background:var(--color-neutral-900);box-shadow:0 0 0 1px var(--color-neutral-800),0 30px 80px rgba(0,0,0,.6);flex:none">
+      <div ref="{{ screenRef }}" style="position:relative;width:368px;height:822px;border-radius:46px;overflow:hidden;background:radial-gradient(120% 45% at 0% 0%,color-mix(in srgb,var(--color-accent) 13%,transparent),transparent 62%),var(--color-bg);user-select:none;-webkit-user-select:none">
+
+        <!-- HOME -->
+        <div aria-hidden="{{ homeHidden }}" style="position:absolute;inset:0;padding-top:50px;display:flex;flex-direction:column;opacity:{{ homeOp }};transform:{{ homeTf }};pointer-events:{{ homePe }};transition:opacity .28s ease,transform .32s cubic-bezier(.2,.8,.2,1);background:radial-gradient(90% 34% at 50% 92%,color-mix(in srgb,var(--color-section-glow) 60%,transparent),transparent 75%)">
+          <div style="padding:14px 22px 0;display:flex;flex-direction:column;gap:2px">
+            <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent)">{{ dateLabel }}</div>
+            <div style="font-size:32px;font-weight:500;letter-spacing:-.02em;line-height:1.1">{{ greeting }}</div>
+          </div>
+          <div style="padding:22px 22px 0;display:flex;align-items:center;gap:16px">
+            <div style="position:relative;width:76px;height:76px;flex:none">
+              <svg width="76" height="76" viewBox="0 0 76 76" style="display:block;transform:rotate(-90deg)"><circle cx="38" cy="38" r="32" style="fill:none;stroke:var(--color-neutral-800);stroke-width:5"></circle><circle cx="38" cy="38" r="32" style="fill:none;stroke:var(--color-accent);stroke-width:5;stroke-linecap:round;stroke-dasharray:{{ ringDash }};transition:stroke-dasharray .6s cubic-bezier(.4,0,.2,1);filter:drop-shadow(0 0 4px var(--color-accent))"></circle></svg>
+              <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:500"><span>{{ pct }}%</span></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:3px;min-width:0">
+              <div style="font-size:25px;font-weight:500;letter-spacing:-.015em;line-height:1">{{ doneN }}<span style="color:color-mix(in srgb,var(--color-text) 45%,transparent)"> / {{ total }}</span></div>
+              <div style="font-size:13px;color:color-mix(in srgb,var(--color-text) 62%,transparent)">{{ leftLabel }}</div>
+              <div style="font-size:12px;display:flex;align-items:center;gap:4px;color:var(--color-accent-300)"><i class="ph ph-flame"></i>Best streak {{ bestStreak }} days</div>
+            </div>
+          </div>
+          <div style="margin:18px 22px 0;display:flex;align-items:center;gap:8px;font-size:13px;min-width:0">
+            <i class="ph ph-alarm" style="font-size:16px;color:var(--color-accent);flex:none"></i>
+            <span style="color:color-mix(in srgb,var(--color-text) 62%,transparent);flex:none">Next reminder</span>
+            <span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ nextRemShort }}</span>
+          </div>
+          <div style="padding:22px 16px 0;display:flex;flex-direction:column">
+            <div style="display:flex;align-items:baseline;justify-content:space-between;padding:0 6px 8px">
+              <div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 60%,transparent)">Up next</div>
+              <button onClick="{{ goToday }}" style="display:inline-flex;align-items:center;gap:4px;border:0;background:transparent;color:var(--color-accent);font:500 13px var(--font-body);cursor:pointer;padding:4px 6px;margin-right:-6px;border-radius:6px" style-hover="background:color-mix(in srgb,var(--color-accent) 10%,transparent)">All habits<i class="ph ph-caret-right"></i></button>
+            </div>
+            <sc-for list="{{ upNext }}" as="w" hint-placeholder-count="3">
+              <div style="max-height:{{ w.maxH }};overflow:hidden;transition:{{ w.tr }}">
+                <div style="padding-bottom:6px">
+                  <button data-wid="{{ w.id }}" onClick="{{ w.tap }}" style="visibility:{{ w.vis }};width:100%;display:flex;align-items:center;gap:12px;min-height:50px;padding:0 14px;border-radius:var(--radius-lg);border:0;background:var(--color-surface);box-shadow:var(--shadow-sm);color:var(--color-text);font:500 14px var(--font-body);cursor:pointer;text-align:left;min-width:0" style-hover="box-shadow:0 0 0 1px var(--color-neutral-700)" style-active="background:var(--color-accent-900)">
+                    <span style="width:20px;height:20px;flex:none;border-radius:50%;border:1.5px solid var(--color-neutral-600)"></span>
+                    <span style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ w.name }}</span>
+                    <span style="font-size:11px;color:color-mix(in srgb,var(--color-text) 50%,transparent);flex:none">{{ w.meta }}</span>
+                  </button>
+                </div>
+              </div>
+            </sc-for>
+            <sc-if value="{{ upNextEmpty }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;align-items:center;gap:8px;min-height:50px;padding:0 6px;font-size:14px;color:var(--color-accent-300)"><i class="ph ph-check-circle" style="font-size:20px"></i>All done for today</div>
+            </sc-if>
+          </div>
+          <div style="position:absolute;left:16px;right:16px;bottom:104px;height:1px;background:linear-gradient(to right,transparent,var(--color-divider) 48px,var(--color-divider) calc(100% - 48px),transparent);pointer-events:none"></div>
+          <div style="position:absolute;left:0;right:0;bottom:99px;height:200px;pointer-events:none;z-index:2">
+            <div ref="{{ catRef }}" onClick="{{ touchPlant }}" style="position:absolute;left:50%;margin-left:-120px;bottom:-23px;width:240px;height:240px;pointer-events:auto;cursor:pointer">
+              <div ref="{{ catInnerRef }}" style="width:100%;height:100%;transform-origin:50% 88%">{{ plantArt }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TODAY -->
+        <div aria-hidden="{{ todayHidden }}" style="position:absolute;inset:0;padding-top:50px;display:flex;flex-direction:column;opacity:{{ todayOp }};transform:{{ todayTf }};pointer-events:{{ todayPe }};transition:opacity .28s ease,transform .32s cubic-bezier(.2,.8,.2,1)">
+          <div style="padding:14px 22px 14px;display:flex;flex-direction:column;gap:10px;flex:none">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+              <div style="display:flex;flex-direction:column;gap:2px">
+                <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent)">{{ dateLabel }}</div>
+                <div style="font-size:32px;font-weight:500;letter-spacing:-.02em;line-height:1.1">Today</div>
+              </div>
+              <button onClick="{{ openAdd }}" aria-label="Add habit" style="width:44px;height:44px;border-radius:var(--radius-lg);border:1px solid var(--color-accent);background:transparent;color:var(--color-accent);display:grid;place-items:center;cursor:pointer;font-size:20px" style-hover="background:color-mix(in srgb,var(--color-accent) 12%,transparent)" style-active="background:color-mix(in srgb,var(--color-accent) 24%,transparent)"><i class="ph ph-plus"></i></button>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:7px">
+              <div style="display:flex;justify-content:space-between;font-size:12px;color:color-mix(in srgb,var(--color-text) 60%,transparent)"><span>{{ doneN }} of {{ total }} done</span><span>Tap to complete · hold to edit</span></div>
+              <div style="height:2px;border-radius:2px;background:var(--color-neutral-800);overflow:hidden"><div style="height:100%;width:{{ progW }};background:var(--color-accent);box-shadow:0 0 10px var(--color-accent);transition:width .5s cubic-bezier(.4,0,.2,1)"></div></div>
+            </div>
+          </div>
+          <div style="flex:1;overflow-y:auto;scrollbar-width:none;padding:4px 16px 250px;position:relative">
+            <sc-for list="{{ list }}" as="h" hint-placeholder-count="5">
+              <div style="max-height:{{ h.maxH }};overflow:hidden;transition:{{ h.tr }}">
+                <div style="padding-bottom:8px">
+                  <div data-hid="{{ h.id }}" onPointerDown="{{ h.onDown }}" onPointerUp="{{ h.onUp }}" onPointerLeave="{{ h.onCancel }}" onPointerCancel="{{ h.onCancel }}" onContextMenu="{{ h.onCtx }}" style="visibility:{{ h.vis }};min-height:68px;display:flex;align-items:center;gap:14px;padding:12px 16px;border-radius:var(--radius-lg);background:var(--color-surface);box-shadow:var(--shadow-sm);cursor:pointer;touch-action:pan-y" style-hover="box-shadow:0 0 0 1px var(--color-neutral-700)">
+                    <div style="width:24px;height:24px;flex:none;border-radius:50%;border:1.5px solid var(--color-neutral-600)"></div>
+                    <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:5px">
+                      <div style="font-size:16px;font-weight:500;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ h.name }}</div>
+                      <div style="display:flex;gap:6px;flex-wrap:wrap">
+                        <span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:2px 8px;border-radius:6px;background:var(--color-neutral-800);color:var(--color-neutral-200)"><i class="ph {{ h.todIcon }}"></i>{{ h.todLabel }}</span>
+                        <sc-if value="{{ h.rem }}" hint-placeholder-val="{{ false }}">
+                          <span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:2px 8px;border-radius:6px;background:var(--color-accent-800);color:var(--color-accent-100)"><i class="ph ph-bell"></i>{{ h.remTime }}</span>
+                        </sc-if>
+                      </div>
+                    </div>
+                    <sc-if value="{{ h.hasStreak }}" hint-placeholder-val="{{ true }}">
+                      <div style="display:flex;align-items:center;gap:3px;font-size:13px;color:var(--color-accent-300);flex:none"><i class="ph ph-flame"></i>{{ h.streak }}</div>
+                    </sc-if>
+                  </div>
+                </div>
+              </div>
+            </sc-for>
+            <sc-if value="{{ allDone }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;align-items:flex-start;gap:14px;padding:48px 8px 0">
+                <div ref="{{ ringRef }}" style="width:84px;height:84px;border-radius:50%;border:1.5px solid var(--color-accent);display:grid;place-items:center;color:var(--color-accent);font-size:36px;box-shadow:0 0 36px color-mix(in srgb,var(--color-accent) 45%,transparent),inset 0 0 22px color-mix(in srgb,var(--color-accent) 25%,transparent)"><i class="ph ph-check"></i></div>
+                <div style="font-size:25px;font-weight:500;letter-spacing:-.015em">Every habit done</div>
+                <div style="font-size:14px;color:color-mix(in srgb,var(--color-text) 65%,transparent);max-width:260px;text-wrap:pretty">{{ celebrateLine }}</div>
+              </div>
+            </sc-if>
+            <sc-if value="{{ empty }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:6px;padding:48px 8px 0">
+                <div style="font-size:20px;font-weight:500">No habits yet</div>
+                <div style="font-size:14px;color:color-mix(in srgb,var(--color-text) 60%,transparent)">Tap + to add your first one.</div>
+              </div>
+            </sc-if>
+          </div>
+          <div style="position:absolute;left:0;right:0;bottom:0;height:260px;background:linear-gradient(to top,var(--color-bg) 62%,transparent);pointer-events:none;z-index:5"></div>
+          <div style="position:absolute;left:16px;right:16px;bottom:98px;height:62px;z-index:10">
+            <div ref="{{ pileRef }}" style="position:absolute;inset:0"></div>
+            <div ref="{{ stackRef }}" style="position:absolute;inset:0">
+              <sc-for list="{{ layers }}" as="l" hint-placeholder-count="0">
+                <div style="position:absolute;bottom:0;height:62px;left:{{ l.inset }};right:{{ l.inset }};transform:{{ l.ty }};opacity:{{ l.op }};z-index:{{ l.z }};border-radius:var(--radius-lg);background:var(--color-surface);box-shadow:var(--shadow-sm)"></div>
+              </sc-for>
+              <sc-if value="{{ hasDone }}" hint-placeholder-val="{{ false }}">
+                <div style="position:absolute;inset:0;z-index:10;display:flex;align-items:center;gap:12px;padding:0 16px;border-radius:var(--radius-lg);background:var(--color-surface);box-shadow:0 0 0 1px var(--color-accent-700),0 0 26px color-mix(in srgb,var(--color-accent) 22%,transparent)">
+                  <div style="width:24px;height:24px;flex:none;border-radius:50%;background:var(--color-accent-800);color:var(--color-accent-200);display:grid;place-items:center;font-size:14px"><i class="ph ph-check"></i></div>
+                  <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:1px">
+                    <div style="font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:color-mix(in srgb,var(--color-text) 75%,transparent)">{{ topName }}</div>
+                    <div style="font-size:11px;display:flex;align-items:center;gap:3px;color:var(--color-accent-300)"><i class="ph ph-flame"></i>{{ topStreak }} day streak</div>
+                  </div>
+                  <span style="font-size:11px;padding:3px 10px;border-radius:6px;background:var(--color-accent-800);color:var(--color-accent-100);flex:none">{{ doneN }} done</span>
+                </div>
+              </sc-if>
+              <sc-if value="{{ noDone }}" hint-placeholder-val="{{ true }}">
+                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:8px;border-radius:var(--radius-lg);border:1px dashed var(--color-neutral-700);font-size:13px;color:color-mix(in srgb,var(--color-text) 50%,transparent)"><i class="ph ph-stack"></i>Done habits stack here</div>
+              </sc-if>
+            </div>
+          </div>
+        </div>
+
+        <!-- STATUS BAR -->
+        <div style="position:absolute;top:0;left:0;right:0;height:50px;display:flex;align-items:center;justify-content:space-between;padding:4px 30px 0 34px;font-size:15px;font-weight:600;z-index:30;pointer-events:none">
+          <span>{{ clock }}</span>
+          <div style="position:absolute;top:11px;left:50%;margin-left:-60px;width:120px;height:34px;border-radius:20px;background:color-mix(in srgb,var(--color-bg) 15%,#000)"></div>
+          <span style="display:flex;gap:5px"><i class="ph ph-cell-signal-full"></i><i class="ph ph-wifi-high"></i><i class="ph ph-battery-high"></i></span>
+        </div>
+
+        <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+          <div ref="{{ toastRef }}" style="position:absolute;left:16px;right:16px;bottom:{{ toastBottom }};z-index:20;display:flex;align-items:center;gap:10px;padding:10px 10px 10px 16px;border-radius:var(--radius-lg);background:var(--color-neutral-900);box-shadow:var(--shadow-md);font-size:14px">
+            <span style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ toastText }}</span>
+            <sc-if value="{{ toastUndo }}" hint-placeholder-val="{{ true }}">
+              <button onClick="{{ undo }}" style="display:inline-flex;align-items:center;gap:5px;min-height:36px;padding:0 12px;border-radius:var(--radius-md);border:0;background:transparent;color:var(--color-accent);font:500 14px var(--font-body);cursor:pointer" style-hover="background:color-mix(in srgb,var(--color-accent) 12%,transparent)"><i class="ph ph-arrow-counter-clockwise"></i>Undo</button>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <!-- TAB BAR -->
+        <div role="tablist" style="position:absolute;left:0;right:0;bottom:0;height:86px;padding:0 40px 24px;z-index:25;display:flex;background:color-mix(in srgb,var(--color-bg) 86%,transparent);backdrop-filter:blur(18px)">
+          <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(to right,transparent,var(--color-divider) 48px,var(--color-divider) calc(100% - 48px),transparent)"></div>
+          <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="2">
+            <button role="tab" aria-selected="{{ t.sel }}" onClick="{{ t.pick }}" style="flex:1;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:0;background:transparent;color:{{ t.col }};font:500 11px var(--font-body);cursor:pointer;transition:color .2s" style-hover="color:var(--color-accent-300)">
+              <div style="position:absolute;top:0;left:50%;width:22px;margin-left:-11px;height:2px;border-radius:0 0 2px 2px;background:var(--color-accent);box-shadow:0 0 10px var(--color-accent);opacity:{{ t.line }};transition:opacity .2s"></div>
+              <div ref="{{ t.ref }}" style="position:relative;font-size:23px;line-height:1;margin-top:8px"><i class="ph {{ t.icon }}"></i>
+                <sc-if value="{{ t.badge }}" hint-placeholder-val="{{ false }}">
+                  <span style="position:absolute;top:-4px;left:16px;min-width:17px;height:17px;padding:0 5px;border-radius:9px;background:var(--color-accent-800);color:var(--color-accent-100);font:500 10px/17px var(--font-body);text-align:center">{{ t.badge }}</span>
+                </sc-if>
+              </div>
+              <span>{{ t.label }}</span>
+            </button>
+          </sc-for>
+        </div>
+        <div style="position:absolute;bottom:8px;left:50%;margin-left:-67px;width:134px;height:5px;border-radius:3px;background:color-mix(in srgb,var(--color-text) 70%,transparent);z-index:26;pointer-events:none"></div>
+
+        <sc-if value="{{ banner }}" hint-placeholder-val="{{ false }}">
+          <div ref="{{ bannerRef }}" style="position:absolute;top:54px;left:10px;right:10px;z-index:60;padding:14px;border-radius:24px;background:color-mix(in srgb,var(--color-neutral-900) 92%,transparent);backdrop-filter:blur(16px);box-shadow:var(--shadow-lg);display:flex;flex-direction:column;gap:12px">
+            <div style="display:flex;gap:12px;align-items:center">
+              <div style="width:38px;height:38px;border-radius:10px;flex:none;border:1px solid var(--color-accent);display:grid;place-items:center;color:var(--color-accent);font-size:19px"><i class="ph ph-moon-stars"></i></div>
+              <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:1px">
+                <div style="font-size:12px;color:color-mix(in srgb,var(--color-text) 60%,transparent);display:flex;justify-content:space-between"><span>Dusk · Reminder</span><span>{{ bannerTime }}</span></div>
+                <div style="font-size:15px;font-weight:500">{{ bannerName }}</div>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <button onClick="{{ bannerSnooze }}" style="min-height:44px;border-radius:12px;border:1px solid var(--color-divider);background:transparent;color:var(--color-text);font:500 14px var(--font-body);cursor:pointer" style-hover="background:color-mix(in srgb,var(--color-text) 7%,transparent)">Snooze 10 min</button>
+              <button onClick="{{ bannerDone }}" style="min-height:44px;border-radius:12px;border:1px solid var(--color-accent);background:transparent;color:var(--color-accent);font:500 14px var(--font-body);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px" style-hover="background:color-mix(in srgb,var(--color-accent) 12%,transparent)"><i class="ph ph-check"></i>Mark done</button>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ editing }}" hint-placeholder-val="{{ false }}">
+          <div ref="{{ backdropRef }}" onClick="{{ closeSheet }}" style="position:absolute;inset:0;z-index:50;background:color-mix(in srgb,var(--color-neutral-900) 65%,transparent)"></div>
+          <div ref="{{ sheetRef }}" style="position:absolute;left:0;right:0;bottom:0;z-index:51;border-radius:28px 28px 0 0;background:var(--color-surface);box-shadow:var(--shadow-lg);padding:10px 20px 36px;display:flex;flex-direction:column;gap:18px">
+            <div style="width:36px;height:4px;border-radius:2px;background:var(--color-neutral-700);align-self:center"></div>
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div style="font-size:20px;font-weight:500">{{ sheetTitle }}</div>
+              <button onClick="{{ closeSheet }}" aria-label="Close" style="width:44px;height:44px;margin-right:-10px;border:0;background:transparent;color:color-mix(in srgb,var(--color-text) 60%,transparent);border-radius:var(--radius-md);cursor:pointer;font-size:18px;display:grid;place-items:center" style-hover="background:color-mix(in srgb,var(--color-text) 7%,transparent)"><i class="ph ph-x"></i></button>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <label style="font-size:12px;color:color-mix(in srgb,var(--color-text) 70%,transparent)">Name</label>
+              <input ref="{{ inputRef }}" value="{{ draftName }}" onChange="{{ onName }}" onKeyDown="{{ onKey }}" placeholder="e.g. Drink water" style="width:100%;min-height:48px;padding:0 14px;font:16px var(--font-body);color:var(--color-text);caret-color:var(--color-accent);background:var(--color-bg);border:1px solid {{ inputBorder }};border-radius:12px;outline:none">
+              <sc-if value="{{ err }}" hint-placeholder-val="{{ false }}"><div style="font-size:12px;color:var(--color-accent-300)">Give the habit a name first.</div></sc-if>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <label style="font-size:12px;color:color-mix(in srgb,var(--color-text) 70%,transparent)">Time of day</label>
+              <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">
+                <sc-for list="{{ todOpts }}" as="o" hint-placeholder-count="4">
+                  <button onClick="{{ o.pick }}" style="min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border-radius:12px;border:1px solid {{ o.bd }};background:{{ o.bg }};color:{{ o.col }};font:500 11px var(--font-body);cursor:pointer"><i class="ph {{ o.icon }}" style="font-size:17px"></i>{{ o.label }}</button>
+                </sc-for>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:10px;padding:14px;border-radius:14px;background:var(--color-bg)">
+              <div style="display:flex;align-items:center;gap:10px">
+                <i class="ph ph-alarm" style="font-size:20px;color:var(--color-accent)"></i>
+                <div style="flex:1;font-size:15px">Reminder</div>
+                <button onClick="{{ toggleRem }}" role="switch" aria-checked="{{ remOnStr }}" style="width:48px;height:28px;border-radius:14px;border:1px solid {{ swBd }};background:{{ swBg }};position:relative;cursor:pointer;padding:0;flex:none"><span style="position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:{{ knobBg }};transform:{{ knobX }};transition:transform .2s cubic-bezier(.4,0,.2,1)"></span></button>
+              </div>
+              <sc-if value="{{ remOn }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:10px">
+                  <div style="display:flex;align-items:center;justify-content:space-between">
+                    <button onClick="{{ timeDown }}" aria-label="15 minutes earlier" style="width:44px;height:44px;border-radius:12px;border:1px solid var(--color-divider);background:transparent;color:var(--color-text);font-size:18px;cursor:pointer;display:grid;place-items:center" style-hover="background:color-mix(in srgb,var(--color-text) 7%,transparent)"><i class="ph ph-minus"></i></button>
+                    <div style="font-size:36px;font-weight:500;letter-spacing:-.02em;font-variant-numeric:tabular-nums">{{ draftTime }}</div>
+                    <button onClick="{{ timeUp }}" aria-label="15 minutes later" style="width:44px;height:44px;border-radius:12px;border:1px solid var(--color-divider);background:transparent;color:var(--color-text);font-size:18px;cursor:pointer;display:grid;place-items:center" style-hover="background:color-mix(in srgb,var(--color-text) 7%,transparent)"><i class="ph ph-plus"></i></button>
+                  </div>
+                  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">
+                    <sc-for list="{{ presets }}" as="p" hint-placeholder-count="4">
+                      <button onClick="{{ p.pick }}" style="min-height:36px;border-radius:10px;border:1px solid {{ p.bd }};background:transparent;color:{{ p.col }};font:500 12px var(--font-body);cursor:pointer;font-variant-numeric:tabular-nums">{{ p.label }}</button>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-if>
+            </div>
+            <div style="display:flex;gap:8px">
+              <sc-if value="{{ canDelete }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ del }}" style="min-height:48px;padding:0 16px;border-radius:12px;border:1px solid var(--color-divider);background:transparent;color:var(--color-neutral-300);font:500 15px var(--font-body);cursor:pointer;display:flex;align-items:center;gap:6px" style-hover="background:color-mix(in srgb,var(--color-text) 7%,transparent)"><i class="ph ph-trash"></i>Delete</button>
+              </sc-if>
+              <button onClick="{{ save }}" style="flex:1;min-height:48px;border-radius:12px;border:1px solid var(--color-accent);background:transparent;color:var(--color-accent);font:500 15px var(--font-body);cursor:pointer" style-hover="background:color-mix(in srgb,var(--color-accent) 12%,transparent)" style-active="background:color-mix(in srgb,var(--color-accent) 24%,transparent)">{{ saveLabel }}</button>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;animSpeed&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Gentle&quot;,&quot;Normal&quot;,&quot;Snappy&quot;],&quot;default&quot;:&quot;Normal&quot;,&quot;tsType&quot;:&quot;'Gentle'|'Normal'|'Snappy'&quot;,&quot;section&quot;:&quot;Motion&quot;},&quot;pileDepth&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;min&quot;:1,&quot;max&quot;:5,&quot;default&quot;:3,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Motion&quot;},&quot;timeFormat&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;24h&quot;,&quot;12h&quot;],&quot;default&quot;:&quot;24h&quot;,&quot;tsType&quot;:&quot;'24h'|'12h'&quot;,&quot;section&quot;:&quot;Format&quot;}}">
+const TOD = {
+  morning: { label: 'Morning', icon: 'ph-sun-horizon' },
+  afternoon: { label: 'Afternoon', icon: 'ph-sun' },
+  evening: { label: 'Evening', icon: 'ph-moon-stars' },
+  anytime: { label: 'Anytime', icon: 'ph-clock' },
+};
+const SEED = [
+  { id: 'h1', name: 'Drink a glass of water', tod: 'morning', rem: true, time: 450, streak: 12 },
+  { id: 'h2', name: 'Stretch for 10 minutes', tod: 'morning', rem: false, time: 480, streak: 5 },
+  { id: 'h3', name: 'Walk outside', tod: 'afternoon', rem: true, time: 750, streak: 3 },
+  { id: 'h4', name: 'Read 20 pages', tod: 'evening', rem: true, time: 1260, streak: 23 },
+  { id: 'h5', name: 'Journal three lines', tod: 'evening', rem: true, time: 1335, streak: 1 },
+  { id: 'h6', name: 'No screens after 23:00', tod: 'evening', rem: false, time: 1380, streak: 8 },
+].map((h, i) => ({ ...h, ord: i }));
+const STAGES = [{ at: 1 }, { at: 7 }, { at: 14 }, { at: 30 }, { at: 100 }];
+function plantArt(stage, dormant) {
+  const h = React.createElement, G = 212, X = 120, line = 'var(--color-accent-400)';
+  const kids = [];
+  kids.push(h('defs', { key: 'd' },
+    h('linearGradient', { id: 'leafG', x1: 0, y1: 0, x2: 0, y2: 1 },
+      h('stop', { offset: 0, style: { stopColor: 'var(--color-accent-500)' } }),
+      h('stop', { offset: 1, style: { stopColor: 'var(--color-accent-800)' } })),
+    h('linearGradient', { id: 'canopyG', x1: 0, y1: G - 210, x2: 0, y2: G - 80, gradientUnits: 'userSpaceOnUse' },
+      h('stop', { offset: 0, style: { stopColor: 'var(--color-accent-600)' } }),
+      h('stop', { offset: 1, style: { stopColor: 'var(--color-accent-900)' } })),
+    h('linearGradient', { id: 'trunkG', x1: 0, y1: 0, x2: 1, y2: 0 },
+      h('stop', { offset: 0, style: { stopColor: 'var(--color-neutral-500)' } }),
+      h('stop', { offset: 1, style: { stopColor: 'var(--color-neutral-800)' } })),
+    h('linearGradient', { id: 'seedG', x1: 0, y1: 0, x2: 1, y2: 1 },
+      h('stop', { offset: 0, style: { stopColor: 'var(--color-accent-500)' } }),
+      h('stop', { offset: 1, style: { stopColor: 'var(--color-accent-800)' } }))));
+  kids.push(h('ellipse', { key: 'sh', cx: X, cy: G + 2, rx: 76, ry: 4, style: { fill: 'rgba(0,0,0,.35)' } }));
+  kids.push(h('path', { key: 'soil', d: `M ${X - 70} ${G + 1} Q ${X} ${G - 16} ${X + 70} ${G + 1} Z`, style: { fill: 'var(--color-neutral-800)' } }));
+  kids.push(h('path', { key: 'soilL', d: `M ${X - 70} ${G + 1} Q ${X} ${G - 16} ${X + 70} ${G + 1}`, style: { fill: 'none', stroke: line, strokeWidth: 1.2, opacity: .6 } }));
+  let fl = 0;
+  const leaf = (x, y, len, ang) => {
+    const k = 'lf' + (fl++), dur = 3.2 + (fl * 0.37) % 1.6, del = (fl * 0.53) % 2;
+    return h('g', { key: k, transform: `translate(${x} ${y}) rotate(${ang})` },
+      h('g', { style: { transformBox: 'fill-box', transformOrigin: '0% 50%', animation: `leafFlutter ${dur}s ease-in-out ${del}s infinite alternate` } },
+        h('path', { d: `M0 0 Q ${len * .5} ${-len * .42} ${len} 0 Q ${len * .5} ${len * .42} 0 0 Z`, style: { fill: 'url(#leafG)', stroke: line, strokeWidth: 1.2, strokeLinejoin: 'round' } }),
+        h('path', { d: `M ${len * .12} 0 L ${len * .8} 0`, style: { stroke: 'var(--color-accent-300)', strokeWidth: .8, opacity: .55, strokeLinecap: 'round' } })));
+  };
+  const stem = (d, w) => h('path', { key: 'stem', d, style: { fill: 'none', stroke: 'var(--color-accent-300)', strokeWidth: w, strokeLinecap: 'round' } });
+  const glowDot = (k, x, y, r, d) => h('circle', { key: k, cx: x, cy: y, r, style: { fill: 'var(--color-accent-100)', animation: `glowPulse 3.4s ease-in-out ${d}s infinite` } });
+  const plant = [];
+  const seed = (rx, ry, split) => h('g', { key: 'seed', style: { animation: dormant ? 'seedPulse 4s ease-in-out infinite' : 'none' } },
+    h('ellipse', { cx: X, cy: G - 11, rx, ry, transform: `rotate(-18 ${X} ${G - 11})`, style: { fill: 'url(#seedG)', stroke: line, strokeWidth: 1.4 } }),
+    split ? h('path', { d: `M ${X - 3} ${G - 15} q 3 3 6 0`, style: { fill: 'none', stroke: 'var(--color-accent-300)', strokeWidth: 1, opacity: .7 } }) : null);
+  const canopy = (blobs) => {
+    const g = [];
+    blobs.forEach(([cx, cy, r], i) => g.push(h('circle', { key: 'o' + i, cx, cy, r: r + 1.6, style: { fill: line } })));
+    blobs.forEach(([cx, cy, r], i) => g.push(h('circle', { key: 'f' + i, cx, cy, r, style: { fill: 'url(#canopyG)' } })));
+    blobs.forEach(([cx, cy, r], i) => g.push(h('path', { key: 'hl' + i, d: `M ${cx - r * .58} ${cy - r * .18} A ${r * .62} ${r * .62} 0 0 1 ${cx - r * .08} ${cy - r * .64}`, style: { fill: 'none', stroke: 'var(--color-accent-300)', strokeWidth: 1.4, opacity: .45, strokeLinecap: 'round' } })));
+    const ys = blobs.map(b => b[1] + b[2]), base = Math.max(...ys);
+    return h('g', { key: 'canopy', style: { transformBox: 'view-box', transformOrigin: `${X}px ${base}px`, animation: 'canopyBreathe 5s ease-in-out infinite' } }, ...g);
+  };
+  const trunk = (topY, bw) => [
+    h('path', { key: 'trunk', d: `M ${X - bw} ${G - 5} Q ${X - bw * .35} ${G - 14} ${X - bw * .38} ${G - 30} L ${X - 2} ${topY} L ${X + 2} ${topY} L ${X + bw * .4} ${G - 30} Q ${X + bw * .38} ${G - 14} ${X + bw + 1} ${G - 5} Z`, style: { fill: 'url(#trunkG)', stroke: line, strokeWidth: 1.3, strokeLinejoin: 'round' } }),
+  ];
+  const branch = (k, d) => h('path', { key: k, d, style: { fill: 'none', stroke: 'var(--color-neutral-600)', strokeWidth: 3, strokeLinecap: 'round' } });
+  if (dormant) plant.push(seed(9, 6.5, false));
+  else if (stage === 1) {
+    plant.push(stem(`M ${X} ${G - 5} Q ${X - 3} ${G - 18} ${X + 2} ${G - 28}`, 2.2), leaf(X + 2, G - 28, 14, -150), leaf(X + 2, G - 28, 13, -32));
+  } else if (stage === 2) {
+    plant.push(stem(`M ${X} ${G - 7} Q ${X + 7} ${G - 34} ${X + 1} ${G - 60}`, 2.8),
+      leaf(X + 4, G - 28, 15, -165), leaf(X + 4, G - 38, 15, -18), leaf(X + 1, G - 60, 20, -140), leaf(X + 1, G - 60, 19, -42));
+  } else if (stage === 3) {
+    plant.push(branch('b1', `M ${X} ${G - 46} Q ${X - 10} ${G - 56} ${X - 17} ${G - 72}`), branch('b2', `M ${X + 1} ${G - 52} Q ${X + 10} ${G - 62} ${X + 16} ${G - 76}`), ...trunk(G - 76, 5),
+      canopy([[X, G - 98, 24], [X - 20, G - 84, 16], [X + 20, G - 86, 17], [X + 2, G - 116, 16]]),
+      leaf(X + 3, G - 26, 12, -28), glowDot('bud', X + 6, G - 106, 2.2, 0));
+  } else if (stage === 4) {
+    plant.push(branch('b1', `M ${X} ${G - 58} Q ${X - 16} ${G - 72} ${X - 28} ${G - 94}`), branch('b2', `M ${X + 1} ${G - 68} Q ${X + 15} ${G - 80} ${X + 26} ${G - 98}`), ...trunk(G - 100, 8),
+      canopy([[X, G - 122, 36], [X - 31, G - 104, 26], [X + 31, G - 106, 27], [X - 14, G - 142, 24], [X + 17, G - 140, 24]]),
+      ...[[X - 22, G - 116], [X + 20, G - 128], [X + 2, G - 150]].map(([x, y], i) => glowDot('bl' + i, x, y, 2.2, i * .9)));
+  } else {
+    plant.push(branch('b1', `M ${X} ${G - 66} Q ${X - 22} ${G - 82} ${X - 40} ${G - 108}`), branch('b2', `M ${X + 1} ${G - 76} Q ${X + 22} ${G - 90} ${X + 40} ${G - 112}`), ...trunk(G - 116, 11),
+      canopy([[X - 52, G - 140, 22], [X + 54, G - 142, 22], [X - 40, G - 118, 32], [X + 40, G - 120, 33], [X, G - 140, 44], [X - 20, G - 168, 30], [X + 22, G - 166, 30]]),
+      ...[[X - 46, G - 126], [X - 18, G - 108], [X + 30, G - 112], [X + 52, G - 136], [X - 56, G - 146], [X - 4, G - 150], [X + 20, G - 178], [X - 24, G - 182], [X + 38, G - 152]].map(([x, y], i) => glowDot('bl' + i, x, y, 2.6, i * .45)));
+  }
+  kids.push(h('g', { key: 'plant', 'data-plant': 1, style: { transformBox: 'view-box', transformOrigin: `${X}px ${G}px`, animation: 'plantSway 5.5s ease-in-out infinite alternate' } }, ...plant));
+  if (!dormant && stage === 5) [[X - 70, G - 90, 0], [X + 74, G - 70, 1.6], [X - 30, G - 196, 3], [X + 60, G - 180, 2.2], [X - 84, G - 160, 4]].forEach(([x, y, d], i) =>
+    kids.push(h('circle', { key: 'ff' + i, cx: x, cy: y, r: 1.8, style: { fill: 'var(--color-accent-200)', filter: 'drop-shadow(0 0 4px var(--color-accent-300))', transformBox: 'fill-box', animation: `firefly 6s ease-in-out ${d}s infinite` } })));
+  return h('svg', { 'data-cat': stage, viewBox: '0 0 240 240', width: '100%', height: '100%', style: { display: 'block', overflow: 'visible', filter: 'drop-shadow(0 0 8px color-mix(in srgb, var(--color-accent) 22%, transparent))' } }, ...kids);
+}
+
+function plantArtPainted(stage, dormant) {
+  const h = React.createElement, G = 212, X = 120;
+  const C = { d: 'var(--color-accent-800)', m: 'var(--color-accent-700)', l: 'var(--color-accent-600)', hl: 'var(--color-accent-300)', rim: 'var(--color-accent-300)',
+    tD: 'var(--color-neutral-800)', tM: 'var(--color-neutral-600)', tL: 'var(--color-neutral-400)', gD: 'var(--color-neutral-900)', gM: 'var(--color-neutral-800)' };
+  const kids = [];
+  let n = 0; const K = p => p + (n++);
+  kids.push(h('ellipse', { key: 'sh', cx: X, cy: G + 3, rx: 84, ry: 5, style: { fill: 'rgba(0,0,0,.4)' } }));
+  kids.push(h('path', { key: 'mound', d: `M ${X - 78} ${G + 2} Q ${X - 40} ${G - 14} ${X} ${G - 13} Q ${X + 42} ${G - 14} ${X + 78} ${G + 2} Z`, style: { fill: C.gD } }));
+  kids.push(h('path', { key: 'moundL', d: `M ${X - 60} ${G - 4} Q ${X - 30} ${G - 13} ${X + 6} ${G - 12} Q ${X - 24} ${G - 8} ${X - 60} ${G - 4} Z`, style: { fill: C.gM } }));
+  const tufts = [];
+  const grass = tufts.map(([dx, dy, s], i) => h('path', { key: 'gr' + i, d: `M ${X + dx - s * .6} ${G + dy} Q ${X + dx - s * .5} ${G + dy - s * .7} ${X + dx - s * .9} ${G + dy - s * 1.3} Q ${X + dx - s * .1} ${G + dy - s * .7} ${X + dx} ${G + dy - s * 1.6} Q ${X + dx + s * .2} ${G + dy - s * .7} ${X + dx + s * .9} ${G + dy - s * 1.2} Q ${X + dx + s * .5} ${G + dy - s * .6} ${X + dx + s * .6} ${G + dy} Z`,
+    style: { fill: i % 2 ? C.l : C.m, transformBox: 'fill-box', transformOrigin: '50% 100%', animation: `grassSway ${2.6 + (i % 3) * .5}s ease-in-out ${i * .3}s infinite alternate` } }));
+  const leafP = (x, y, len, ang, wide = .5) => h('g', { key: K('lp'), transform: `translate(${x} ${y}) rotate(${ang})` },
+    h('g', { style: { transformBox: 'fill-box', transformOrigin: '0% 50%', animation: `leafFlutter ${3 + (n % 4) * .4}s ease-in-out ${(n % 5) * .4}s infinite alternate` } },
+      h('path', { d: `M0 0 Q ${len * .45} ${-len * wide} ${len} 0 Q ${len * .45} ${len * wide} 0 0 Z`, style: { fill: C.m } }),
+      h('path', { d: `M0 0 Q ${len * .45} ${-len * wide} ${len} 0 Q ${len * .5} ${-len * .08} 0 0 Z`, style: { fill: C.l } }),
+      h('path', { d: `M ${len * .25} ${-len * .2} Q ${len * .5} ${-len * .32} ${len * .72} ${-len * .14}`, style: { fill: 'none', stroke: C.hl, strokeWidth: 1.1, strokeLinecap: 'round', opacity: .8 } })));
+  const stemP = (d, w) => [h('path', { key: K('st'), d, style: { fill: 'none', stroke: C.gD, strokeWidth: w + 1.6, strokeLinecap: 'round' } }), h('path', { key: K('st'), d, style: { fill: 'none', stroke: C.l, strokeWidth: w, strokeLinecap: 'round' } })];
+  const trunkP = (topY, bw, lean = 0) => {
+    const tx = X + lean;
+    const d = `M ${X - bw * 2.1} ${G - 6} Q ${X - bw * 1.1} ${G - 9} ${X - bw * .9} ${G - 22} Q ${X - bw * .7} ${(G + topY) / 2} ${tx - bw * .45} ${topY} L ${tx + bw * .45} ${topY} Q ${X + bw * .8} ${(G + topY) / 2} ${X + bw * .95} ${G - 22} Q ${X + bw * 1.2} ${G - 9} ${X + bw * 2.2} ${G - 6} Q ${X + bw * .6} ${G - 2} ${X} ${G - 5} Q ${X - bw * .7} ${G - 2} ${X - bw * 2.1} ${G - 6} Z`;
+    return [
+      h('path', { key: K('tr'), d, style: { fill: C.tD } }),
+      h('path', { key: K('tr'), d: `M ${X - bw * .9} ${G - 22} Q ${X - bw * .7} ${(G + topY) / 2} ${tx - bw * .45} ${topY} L ${tx + bw * .05} ${topY} Q ${X - bw * .1} ${(G + topY) / 2} ${X - bw * .05} ${G - 12} Q ${X - bw * .5} ${G - 8} ${X - bw * 1.6} ${G - 6} Q ${X - bw * 1} ${G - 10} ${X - bw * .9} ${G - 22} Z`, style: { fill: C.tM } }),
+      h('path', { key: K('tr'), d: `M ${X - bw * .6} ${G - 26} Q ${X - bw * .5} ${(G + topY) / 2} ${tx - bw * .25} ${topY + 6}`, style: { fill: 'none', stroke: C.tL, strokeWidth: Math.max(1, bw * .22), strokeLinecap: 'round', opacity: .8 } }),
+    ];
+  };
+  const branchP = d => [h('path', { key: K('br'), d, style: { fill: 'none', stroke: C.tD, strokeWidth: 4.2, strokeLinecap: 'round' } }), h('path', { key: K('br'), d, style: { fill: 'none', stroke: C.tM, strokeWidth: 2, strokeLinecap: 'round' } })];
+  const canopyP = clumps => {
+    const L = { d: [], m: [], l: [], hl: [] };
+    clumps.forEach(([cx, cy, r], i) => {
+      L.d.push(h('circle', { key: 'cd' + i, cx, cy, r, style: { fill: C.d } }));
+      [40, 90, 140, 200, 340].forEach((a, j) => { const t = a * Math.PI / 180; L.d.push(h('circle', { key: `cb${i}_${j}`, cx: cx + Math.cos(t) * r * .82, cy: cy + Math.sin(t) * r * .78, r: r * .4, style: { fill: C.d } })); });
+      const mx = cx - r * .1, my = cy - r * .16, mr = r * .8;
+      L.m.push(h('circle', { key: 'cm' + i, cx: mx, cy: my, r: mr, style: { fill: C.m } }));
+      [].forEach((a, j) => { const t = a * Math.PI / 180; L.m.push(h('circle', { key: `cmb${i}_${j}`, cx: mx + Math.cos(t) * mr * .8, cy: my + Math.sin(t) * mr * .78, r: mr * (.36 + (j % 2) * .06), style: { fill: C.m } })); });
+      const lx = cx - r * .28, ly = cy - r * .36, lr = r * .46;
+      L.l.push(h('ellipse', { key: 'cl' + i, cx: lx, cy: ly, rx: lr, ry: lr * .78, style: { fill: C.l } }));
+      [].forEach((a, j) => { const t = a * Math.PI / 180; L.l.push(h('circle', { key: `clb${i}_${j}`, cx: lx + Math.cos(t) * lr * .78, cy: ly + Math.sin(t) * lr * .74, r: lr * .42, style: { fill: C.l } })); });
+      L.hl.push(h('path', { key: 'ch' + i, d: `M ${lx - lr * .7} ${ly - lr * .1} Q ${lx - lr * .45} ${ly - lr * .95} ${lx + lr * .35} ${ly - lr * .95}`, style: { fill: 'none', stroke: C.hl, strokeWidth: Math.max(1.6, r * .06), strokeLinecap: 'round' } }));
+      if (0) L.hl.push(h('path', { key: 'cr' + i, d: `M ${cx + r * .55} ${cy - r * .72} A ${r} ${r} 0 0 1 ${cx + r * 1.02} ${cy - r * .05}`, style: { fill: 'none', stroke: C.rim, strokeWidth: 1.4, strokeLinecap: 'round', opacity: .55 } }));
+    });
+    const base = Math.max(...clumps.map(c => c[1] + c[2]));
+    return h('g', { key: K('canopy'), style: { transformBox: 'view-box', transformOrigin: `${X}px ${base}px`, animation: 'canopyBreathe 5s ease-in-out infinite' } }, ...L.d, ...L.m, ...L.l, ...L.hl);
+  };
+  const glow = (x, y, r, d) => h('circle', { key: K('gl'), cx: x, cy: y, r, style: { fill: 'var(--color-accent-100)', animation: `glowPulse 3.4s ease-in-out ${d}s infinite` } });
+  const falling = (pts) => pts.map(([x, y, d], i) => h('ellipse', { key: K('fall'), cx: x, cy: y, rx: 3.2, ry: 1.8, style: { fill: C.l, transformBox: 'fill-box', animation: `leafFall 7s ease-in ${d}s infinite` } }));
+  const P = [];
+  if (dormant) {
+    P.push(h('g', { key: 'seed', style: { animation: 'seedPulse 4s ease-in-out infinite' } },
+      h('ellipse', { cx: X, cy: G - 15, rx: 8.5, ry: 7, style: { fill: C.tM } }),
+      h('path', { d: `M ${X - 8.5} ${G - 16} Q ${X} ${G - 27} ${X + 8.5} ${G - 16} Z`, style: { fill: C.tD } }),
+      h('path', { d: `M ${X - 4} ${G - 12} Q ${X - 2} ${G - 9} ${X + 1} ${G - 10}`, style: { fill: 'none', stroke: C.tL, strokeWidth: 1.2, strokeLinecap: 'round' } })));
+  } else if (stage === 1) {
+    P.push(...stemP(`M ${X} ${G - 11} Q ${X - 2} ${G - 22} ${X + 1} ${G - 30}`, 2.2), leafP(X + 1, G - 30, 15, -160, .62), leafP(X + 1, G - 30, 14, -25, .62));
+  } else if (stage === 2) {
+    P.push(...stemP(`M ${X} ${G - 11} Q ${X + 6} ${G - 36} ${X + 1} ${G - 62}`, 2.8),
+      leafP(X + 3, G - 28, 15, -168), leafP(X + 4, G - 38, 16, -14), leafP(X + 2, G - 50, 16, -160), leafP(X + 1, G - 62, 19, -130, .55), leafP(X + 1, G - 62, 18, -48, .55));
+  } else if (stage === 3) {
+    P.push(...branchP(`M ${X} ${G - 48} Q ${X - 9} ${G - 58} ${X - 15} ${G - 74}`), ...trunkP(G - 82, 4.5, 1),
+      canopyP([[X - 17, G - 86, 15], [X + 19, G - 88, 16], [X, G - 100, 23], [X + 3, G - 120, 15]]), leafP(X + 3, G - 30, 11, -26));
+  } else if (stage === 4) {
+    P.push(...branchP(`M ${X} ${G - 56} Q ${X - 18} ${G - 70} ${X - 32} ${G - 94}`), ...branchP(`M ${X + 1} ${G - 66} Q ${X + 18} ${G - 78} ${X + 30} ${G - 98}`), ...trunkP(G - 104, 8, 2),
+      canopyP([[X - 44, G - 116, 17], [X + 46, G - 118, 17], [X - 30, G - 104, 24], [X + 32, G - 106, 25], [X, G - 124, 34], [X - 14, G - 148, 23], [X + 18, G - 146, 23]]),
+      ...falling([[X + 30, G - 100, 1]]));
+  } else {
+    P.push(...branchP(`M ${X} ${G - 62} Q ${X - 24} ${G - 80} ${X - 46} ${G - 110}`), ...branchP(`M ${X + 1} ${G - 72} Q ${X + 24} ${G - 88} ${X + 46} ${G - 114}`), ...trunkP(G - 118, 11, 2),
+      canopyP([[X - 60, G - 138, 20], [X + 62, G - 140, 20], [X - 42, G - 116, 30], [X + 43, G - 118, 31], [X, G - 140, 43], [X - 24, G - 172, 28], [X + 26, G - 170, 28], [X + 2, G - 192, 19]]),
+      ...[[X - 40, G - 126], [X + 36, G - 116], [X - 4, G - 152], [X + 22, G - 180]].map(([x, y], i) => glow(x, y, 2.2, i * .6)),
+      ...falling([[X - 44, G - 110, 0], [X + 40, G - 112, 3.4]]));
+  }
+  kids.push(h('g', { key: 'plant', 'data-plant': 1, style: { transformBox: 'view-box', transformOrigin: `${X}px ${G}px`, animation: 'plantSway 5.5s ease-in-out infinite alternate' } }, ...P));
+  kids.push(...grass);
+  if (!dormant && stage === 5) [[X - 74, G - 86, 0], [X + 78, G - 120, 2], [X - 60, G - 196, 3.6]].forEach(([x, y, d], i) =>
+    kids.push(h('circle', { key: 'ff' + i, cx: x, cy: y, r: 1.8, style: { fill: 'var(--color-accent-200)', filter: 'drop-shadow(0 0 4px var(--color-accent-300))', transformBox: 'fill-box', animation: `firefly 6s ease-in-out ${d}s infinite` } })));
+  return h('svg', { 'data-cat': stage, viewBox: '0 0 240 240', width: '100%', height: '100%', style: { display: 'block', overflow: 'visible', shapeRendering: 'geometricPrecision' } }, ...kids);
+}
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+class Component extends DCLogic {
+  state = { tab: 'home', habits: SEED, done: [], leaving: {}, editing: null, err: false, toast: null, banner: null, now: Date.now(), restored: null, catPreview: null };
+  screenRef = React.createRef(); pileRef = React.createRef(); stackRef = React.createRef();
+  sheetRef = React.createRef(); backdropRef = React.createRef(); toastRef = React.createRef();
+  bannerRef = React.createRef(); ringRef = React.createRef(); inputRef = React.createRef();
+  catRef = React.createRef(); catInnerRef = React.createRef(); homeTabRef = React.createRef(); todayTabRef = React.createRef();
+
+  catInfo(s = this.state) {
+    const best = Math.max(0, ...s.habits.map(h => h.streak), ...s.done.map(d => d.h.streak + 1));
+    const streak = s.catPreview != null ? STAGES[s.catPreview - 1].at : best;
+    let stage = 1; STAGES.forEach((st, i) => { if (streak >= st.at) stage = i + 1; });
+    return { streak, stage, asleep: streak === 0 };
+  }
+
+  componentDidMount() {
+    this._prev = this.state; this.iv = setInterval(() => this.setState({ now: Date.now() }), 20000); }
+  componentWillUnmount() { clearInterval(this.iv); clearTimeout(this.tt); }
+  rustle(sparkle) {
+    const box = this.catRef.current; if (!box) return;
+    box.querySelector('[data-plant]')?.animate([{ transform: 'rotate(0)' }, { transform: 'rotate(-3.5deg)' }, { transform: 'rotate(2.5deg)' }, { transform: 'rotate(-1.2deg)' }, { transform: 'rotate(0)' }], { duration: 850, easing: 'ease-out' });
+    if (!sparkle) return;
+    const ci = this.catInfo(), y0 = ci.asleep ? 196 : [0, 176, 150, 100, 84, 50][ci.stage];
+    for (let i = 0; i < 4; i++) {
+      const d = document.createElement('div');
+      Object.assign(d.style, { position: 'absolute', left: 117 + (Math.random() - .5) * (ci.stage >= 4 ? 90 : 30) + 'px', top: y0 + Math.random() * 20 + 'px', width: '5px', height: '5px', borderRadius: '50%', background: 'var(--color-accent-200)', boxShadow: '0 0 8px var(--color-accent-300)', pointerEvents: 'none' });
+      box.appendChild(d);
+      d.animate([{ transform: 'translateY(0) scale(.4)', opacity: 0 }, { opacity: 1, offset: .25 }, { transform: `translate(${(Math.random() - .5) * 20}px, ${-40 - Math.random() * 30}px) scale(1)`, opacity: 0 }], { duration: 1200 + Math.random() * 400, delay: i * 90, easing: 'cubic-bezier(.2,.7,.3,1)', fill: 'backwards' }).onfinish = () => d.remove();
+    }
+  }
+
+  componentDidUpdate(pp, ps0) {
+    const s = this.state, ps = (ps0 && ps0.habits) ? ps0 : (this._prev || s);
+    this._prev = s;
+    if (s.editing && !ps.editing) {
+      this.sheetRef.current?.animate([{ transform: 'translateY(100%)' }, { transform: 'none' }], { duration: 340, easing: 'cubic-bezier(.2,.8,.2,1)' });
+      this.backdropRef.current?.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 240 });
+      if (s.editing.isNew) setTimeout(() => this.inputRef.current?.focus(), 200);
+    }
+    if (s.toast && s.toast !== ps.toast && (!ps.toast || ps.toast.key !== s.toast.key))
+      this.toastRef.current?.animate([{ opacity: 0, transform: 'translateY(10px) scale(.97)' }, { opacity: 1, transform: 'none' }], { duration: 260, easing: 'cubic-bezier(.2,.8,.2,1)' });
+    if (s.banner && !ps.banner)
+      this.bannerRef.current?.animate([{ transform: 'translateY(-140%)', opacity: 0 }, { transform: 'translateY(6px)', opacity: 1, offset: .7 }, { transform: 'none' }], { duration: 520, easing: 'cubic-bezier(.2,.8,.2,1)' });
+    if (s.restored && s.restored !== ps.restored) {
+      const el = s.tab === 'home' ? this.rowEl(s.restored.id) : this.cardEl(s.restored.id);
+      el?.animate([{ opacity: 0, transform: 'perspective(800px) translateY(30px) rotateX(70deg)' }, { opacity: 1, transform: 'none' }], { duration: 420, easing: 'cubic-bezier(.2,.8,.2,1)' });
+    }
+    if (s.tab !== ps.tab) {
+      const ic = (s.tab === 'home' ? this.homeTabRef : this.todayTabRef).current;
+      ic?.animate([{ transform: 'scale(1)' }, { transform: 'scale(.86)', offset: .35 }, { transform: 'scale(1.08)', offset: .7 }, { transform: 'none' }], { duration: 360, easing: 'ease-out' });
+    }
+    const ci = this.catInfo(), pci = this.catInfo(ps);
+    if (ci.stage !== pci.stage || ci.asleep !== pci.asleep)
+      this.catInnerRef.current?.animate([{ transform: 'scale(.82)', opacity: .4 }, { transform: 'scale(1.04)', opacity: 1, filter: 'drop-shadow(0 0 16px var(--color-accent))', offset: .6 }, { transform: 'none' }], { duration: 900, easing: 'cubic-bezier(.2,.8,.2,1)' });
+    const all = x => x.habits.length === 0 && x.done.length > 0;
+    if (all(s) && !all(ps)) { if (s.tab === 'today') this.burst(); else this.rustle(true); }
+  }
+
+  dur() { const v = this.props.animSpeed ?? 'Normal'; return v === 'Gentle' ? 1150 : v === 'Snappy' ? 540 : 800; }
+  fmt(m) {
+    m = ((m % 1440) + 1440) % 1440;
+    const h = Math.floor(m / 60), mm = String(m % 60).padStart(2, '0');
+    if ((this.props.timeFormat ?? '24h') === '12h') return `${h % 12 || 12}:${mm} ${h < 12 ? 'AM' : 'PM'}`;
+    return `${String(h).padStart(2, '0')}:${mm}`;
+  }
+  cardEl(id) { return this.screenRef.current?.querySelector(`[data-hid="${id}"]`); }
+  rowEl(id) { return this.screenRef.current?.querySelector(`[data-wid="${id}"]`); }
+  nextRem() {
+    const d = new Date(this.state.now), n = d.getHours() * 60 + d.getMinutes();
+    const r = this.state.habits.filter(h => h.rem).sort((a, b) => a.time - b.time);
+    return r.find(h => h.time >= n) || r[0] || null;
+  }
+
+  ghost(el, habit, D, target, toTab) {
+    const scr = this.screenRef.current;
+    if (!scr || !target || !el) return;
+    const sr = scr.getBoundingClientRect(), k = sr.width / scr.offsetWidth || 1;
+    const cr = el.getBoundingClientRect(), ar = target.getBoundingClientRect();
+    const x = (cr.left - sr.left) / k, y = (cr.top - sr.top) / k, w = cr.width / k, h = cr.height / k;
+    const ax = (ar.left - sr.left) / k, ay = (ar.top - sr.top) / k, aw = ar.width / k, ah = ar.height / k;
+    const dx = ax + aw / 2 - (x + w / 2), dy = ay + ah / 2 - (y + h / 2);
+    const sx = toTab ? 0.12 : aw / w, sy = toTab ? 0.3 : ah / h;
+    const g = document.createElement('div');
+    Object.assign(g.style, { position: 'absolute', left: x + 'px', top: y + 'px', width: w + 'px', height: h + 'px', zIndex: 40, pointerEvents: 'none', transformStyle: 'preserve-3d' });
+    const front = el.cloneNode(true);
+    front.removeAttribute('data-hid'); front.removeAttribute('data-wid');
+    Object.assign(front.style, { position: 'absolute', inset: '0', margin: '0', visibility: 'visible', transform: 'none', backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' });
+    const back = document.createElement('div');
+    back.innerHTML = `<div style="width:24px;height:24px;flex:none;border-radius:50%;background:var(--color-accent-800);color:var(--color-accent-200);display:grid;place-items:center;font-size:14px"><i class="ph ph-check"></i></div><div style="flex:1;min-width:0;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(habit.name)}</div>`;
+    Object.assign(back.style, { position: 'absolute', inset: '0', display: 'flex', alignItems: 'center', gap: '12px', padding: '0 16px', borderRadius: '14px', background: 'var(--color-surface)', boxShadow: '0 0 0 1px var(--color-accent), 0 0 30px color-mix(in srgb, var(--color-accent) 45%, transparent)', transform: 'rotateX(180deg)', backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' });
+    g.append(front, back);
+    scr.appendChild(g);
+    const P = 'perspective(800px) ';
+    const end = { transform: P + `translate(${dx}px,${dy}px) rotateX(-180deg) scale(${sx},${sy})` };
+    if (toTab) end.opacity = 0;
+    const a = g.animate([
+      { transform: P + 'translate(0,0) rotateX(0deg) scale(1,1)', opacity: 1 },
+      { transform: P + 'translate(0,-12px) rotateX(-22deg) scale(1.04,1.04)', offset: .18 },
+      { transform: P + `translate(${dx * .5}px,${dy * .42 - 36}px) rotateX(-115deg) scale(${(1 + sx) / 2},${(1 + sy) / 2})`, offset: .55 },
+      { transform: P + `translate(${dx}px,${dy + 7}px) rotateX(-180deg) scale(${sx},${sy})`, opacity: 1, offset: .88 },
+      end,
+    ], { duration: D, easing: 'cubic-bezier(.45,0,.25,1)', fill: 'forwards' });
+    a.onfinish = () => g.remove();
+  }
+
+  complete(id, el) {
+    if (this.state.leaving[id]) return;
+    const habit = this.state.habits.find(h => h.id === id);
+    if (!habit) return;
+    const D = this.dur(), onHome = this.state.tab === 'home';
+    const src = el || (onHome ? this.rowEl(id) : this.cardEl(id));
+    this.ghost(src, habit, D, onHome ? this.todayTabRef.current : this.pileRef.current, onHome);
+    this.setState(s => ({ leaving: { ...s.leaving, [id]: true }, banner: s.banner && s.banner.id === id ? null : s.banner }));
+    setTimeout(() => {
+      this.setState(s => {
+        const idx = s.habits.findIndex(x => x.id === id);
+        const lv = { ...s.leaving }; delete lv[id];
+        if (idx < 0) return { leaving: lv };
+        return { habits: s.habits.filter(x => x.id !== id), done: [...s.done, { h: s.habits[idx], idx }], leaving: lv, toast: { key: Date.now(), text: `${s.habits[idx].name} — done`, undo: true } };
+      });
+      if (onHome) {
+        this.todayTabRef.current?.animate([{ transform: 'none' }, { transform: 'translateY(3px) scale(.9)' }, { transform: 'scale(1.1)' }, { transform: 'none' }], { duration: 380, easing: 'ease-out' });
+        this.rustle(true);
+      } else this.stackRef.current?.animate([{ transform: 'translateY(0)' }, { transform: 'translateY(5px) scale(.985)' }, { transform: 'none' }], { duration: 300, easing: 'cubic-bezier(.2,.8,.2,1)' });
+      this.armToast();
+    }, D);
+  }
+  armToast() { clearTimeout(this.tt); this.tt = setTimeout(() => this.setState({ toast: null }), 4200); }
+
+  undo() {
+    clearTimeout(this.tt);
+    this.setState(s => {
+      if (!s.done.length) return { toast: null };
+      const last = s.done[s.done.length - 1], hs = [...s.habits];
+      hs.splice(Math.min(last.idx, hs.length), 0, last.h);
+      return { habits: hs, done: s.done.slice(0, -1), toast: null, restored: { id: last.h.id, key: Date.now() } };
+    });
+  }
+
+  burst() {
+    const scr = this.screenRef.current, ring = this.ringRef.current;
+    if (!scr || !ring) return;
+    const sr = scr.getBoundingClientRect(), k = sr.width / scr.offsetWidth || 1, rr = ring.getBoundingClientRect();
+    const cx = (rr.left - sr.left + rr.width / 2) / k, cy = (rr.top - sr.top + rr.height / 2) / k;
+    ring.animate([{ transform: 'scale(.4)', opacity: 0 }, { transform: 'scale(1.12)', opacity: 1, offset: .6 }, { transform: 'scale(1)' }], { duration: 650, easing: 'cubic-bezier(.2,.8,.2,1)' });
+    const halo = document.createElement('div');
+    Object.assign(halo.style, { position: 'absolute', left: cx - 42 + 'px', top: cy - 42 + 'px', width: '84px', height: '84px', borderRadius: '50%', border: '1.5px solid var(--color-accent)', pointerEvents: 'none', zIndex: 30 });
+    scr.appendChild(halo);
+    halo.animate([{ transform: 'scale(1)', opacity: .8 }, { transform: 'scale(3.2)', opacity: 0 }], { duration: 1100, easing: 'cubic-bezier(.1,.7,.3,1)' }).onfinish = () => halo.remove();
+    const cols = ['var(--color-accent-300)', 'var(--color-accent-400)', 'var(--color-accent)', 'var(--color-neutral-200)'];
+    for (let i = 0; i < 34; i++) {
+      const d = document.createElement('div'), sz = 3 + Math.random() * 5, ang = Math.random() * Math.PI * 2, r = 60 + Math.random() * 130;
+      const c = cols[i % cols.length];
+      Object.assign(d.style, { position: 'absolute', left: cx - sz / 2 + 'px', top: cy - sz / 2 + 'px', width: sz + 'px', height: sz + 'px', borderRadius: '50%', background: c, boxShadow: `0 0 8px ${c}`, pointerEvents: 'none', zIndex: 30 });
+      scr.appendChild(d);
+      d.animate([{ transform: 'translate(0,0) scale(1)', opacity: 1 }, { transform: `translate(${Math.cos(ang) * r}px,${Math.sin(ang) * r + 30}px) scale(.2)`, opacity: 0 }], { duration: 900 + Math.random() * 600, delay: 120 + Math.random() * 120, easing: 'cubic-bezier(.1,.8,.3,1)', fill: 'backwards' }).onfinish = () => d.remove();
+    }
+  }
+
+  openEdit(h) { this.setState({ editing: { ...h, isNew: false }, err: false, banner: null }); }
+  openAdd() {
+    const ord = Math.max(0, ...this.state.habits.map(h => h.ord), ...this.state.done.map(d => d.h.ord)) + 1;
+    this.setState({ editing: { id: 'h' + Date.now(), name: '', tod: 'anytime', rem: false, time: 540, streak: 0, ord, isNew: true }, err: false, banner: null });
+  }
+  setDraft(p) { this.setState(s => ({ editing: { ...s.editing, ...p }, err: p.name !== undefined ? false : s.err })); }
+  closeSheet() {
+    const sh = this.sheetRef.current, bd = this.backdropRef.current;
+    if (!sh) return this.setState({ editing: null });
+    bd?.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 220, fill: 'forwards' });
+    sh.animate([{ transform: 'none' }, { transform: 'translateY(100%)' }], { duration: 240, easing: 'cubic-bezier(.4,0,1,1)', fill: 'forwards' }).onfinish = () => this.setState({ editing: null });
+  }
+  save() {
+    const e = this.state.editing;
+    if (!e.name.trim()) { this.setState({ err: true }); this.inputRef.current?.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-6px)' }, { transform: 'translateX(6px)' }, { transform: 'translateX(-3px)' }, { transform: 'none' }], { duration: 300 }); return; }
+    const { isNew, ...h } = e; h.name = h.name.trim();
+    this.setState(s => ({ habits: isNew ? [...s.habits, h] : s.habits.map(x => x.id === h.id ? h : x) }));
+    this.closeSheet();
+  }
+  del() {
+    const id = this.state.editing.id;
+    this.closeSheet();
+    setTimeout(() => this.setState(s => ({ habits: s.habits.filter(x => x.id !== id), toast: { key: Date.now(), text: 'Habit deleted', undo: false } })), 240);
+    this.armToast();
+  }
+  simulate() {
+    const h = this.nextRem() || this.state.habits[0];
+    if (!h) return;
+    this.setState({ banner: { id: h.id, name: h.name, time: h.rem ? h.time : null }, editing: null });
+  }
+  newDay() {
+    clearTimeout(this.tt);
+    this.setState(s => {
+      const doneIds = new Set(s.done.map(d => d.h.id));
+      const all = [...s.habits, ...s.done.map(d => d.h)].sort((a, b) => a.ord - b.ord)
+        .map(h => ({ ...h, streak: doneIds.has(h.id) ? h.streak + 1 : 0 }));
+      return { habits: all, done: [], leaving: {}, toast: null, banner: null, editing: null };
+    });
+  }
+  setTab(t) { if (t !== this.state.tab) this.setState({ tab: t }); }
+
+  renderVals() {
+    const { habits, done, leaving, editing, toast, banner, tab } = this.state;
+    const D = this.dur();
+    const now = new Date(this.state.now);
+    const collapse = lv => ({ maxH: lv ? '0px' : '160px', vis: lv ? 'hidden' : 'visible', tr: lv ? `max-height ${Math.round(D * .42)}ms cubic-bezier(.4,0,.2,1) ${Math.round(D * .3)}ms` : 'none' });
+    const list = habits.map(h => {
+      const lv = !!leaving[h.id];
+      return {
+        id: h.id, name: h.name, todLabel: TOD[h.tod].label, todIcon: TOD[h.tod].icon,
+        rem: h.rem, remTime: this.fmt(h.time), streak: h.streak, hasStreak: h.streak > 0, ...collapse(lv),
+        onDown: e => {
+          if (e.button > 0 || lv) return;
+          const el = e.currentTarget;
+          const hold = el.animate([{ transform: 'scale(1)' }, { transform: 'scale(.965)' }], { duration: 480, easing: 'ease-out', fill: 'forwards' });
+          this.lp = { id: h.id, el, hold, fired: false, t: setTimeout(() => {
+            this.lp.fired = true; hold.cancel();
+            el.animate([{ transform: 'scale(.965)' }, { transform: 'scale(1.02)' }, { transform: 'none' }], { duration: 260 });
+            this.openEdit(h);
+          }, 480) };
+        },
+        onUp: () => {
+          const lp = this.lp;
+          if (!lp || lp.id !== h.id) return;
+          clearTimeout(lp.t); this.lp = null;
+          if (!lp.fired) { lp.hold.cancel(); this.complete(h.id, lp.el); }
+        },
+        onCancel: () => { if (this.lp && this.lp.id === h.id && !this.lp.fired) { clearTimeout(this.lp.t); this.lp.hold.cancel(); this.lp = null; } },
+        onCtx: e => e.preventDefault(),
+      };
+    });
+    const total = habits.length + done.length, doneN = done.length;
+    const pctN = total ? Math.round(doneN / total * 100) : 0;
+    const depth = Math.max(1, Math.min(5, this.props.pileDepth ?? 3));
+    const layers = [];
+    for (let i = 1; i < Math.min(done.length, depth); i++) layers.push({ inset: i * 10 + 'px', ty: `translateY(${-i * 7}px)`, op: Math.max(.15, 1 - i * .3), z: 10 - i });
+    const top = done[done.length - 1];
+    const nr = this.nextRem();
+    const C = 2 * Math.PI * 32;
+    const e = editing;
+    const remOn = !!(e && e.rem);
+    const isHome = tab === 'home';
+    const ci = this.catInfo();
+    const left = habits.length - Object.keys(leaving).length;
+    const hr = now.getHours();
+
+    return {
+      screenRef: this.screenRef, pileRef: this.pileRef, stackRef: this.stackRef, sheetRef: this.sheetRef,
+      backdropRef: this.backdropRef, toastRef: this.toastRef, bannerRef: this.bannerRef, ringRef: this.ringRef, inputRef: this.inputRef,
+      catRef: this.catRef, catInnerRef: this.catInnerRef,
+      homeOp: isHome ? 1 : 0, homeTf: isHome ? 'none' : 'translateX(-28px)', homePe: isHome ? 'auto' : 'none', homeHidden: String(!isHome),
+      todayOp: isHome ? 0 : 1, todayTf: isHome ? 'translateX(28px)' : 'none', todayPe: isHome ? 'none' : 'auto', todayHidden: String(isHome),
+      tabs: [
+        { key: 'home', label: 'Home', icon: isHome ? 'ph-house-simple' : 'ph-house-simple', ref: this.homeTabRef, badge: 0 },
+        { key: 'today', label: 'Today', icon: 'ph-list-checks', ref: this.todayTabRef, badge: left > 0 ? left : 0 },
+      ].map(t => ({ ...t, sel: String(t.key === tab), col: t.key === tab ? 'var(--color-accent)' : 'color-mix(in srgb, var(--color-text) 55%, transparent)', line: t.key === tab ? 1 : 0, pick: () => this.setTab(t.key) })),
+      goToday: () => this.setTab('today'),
+      touchPlant: () => this.rustle(true),
+      greeting: hr < 5 ? 'Good night' : hr < 12 ? 'Good morning' : hr < 18 ? 'Good afternoon' : 'Good evening',
+      clock: this.fmt(hr * 60 + now.getMinutes()).replace(/ (AM|PM)$/, ''),
+      dateLabel: now.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }),
+      list, total, doneN, progW: pctN + '%', pct: pctN,
+      allDone: habits.length === 0 && done.length > 0, empty: total === 0,
+      celebrateLine: `${doneN} ${doneN === 1 ? 'streak' : 'streaks'} extended tonight. See you tomorrow.`,
+      layers, hasDone: !!top, noDone: !top,
+      topName: top ? top.h.name : '', topStreak: top ? top.h.streak + 1 : 0,
+      toast: !!toast, toastText: toast ? toast.text : '', toastUndo: !!(toast && toast.undo),
+      toastBottom: isHome ? '98px' : '174px',
+      undo: () => this.undo(), openAdd: () => this.openAdd(),
+      simulate: () => this.simulate(), newDay: () => this.newDay(),
+      banner: !!banner, bannerName: banner ? banner.name : '', bannerTime: banner && banner.time != null ? this.fmt(banner.time) : 'now',
+      bannerDone: () => { const id = banner.id; this.setState({ banner: null }); this.complete(id); },
+      bannerSnooze: () => {
+        const t = this.fmt(hr * 60 + now.getMinutes() + 10);
+        this.setState({ banner: null, toast: { key: Date.now(), text: `Reminder snoozed until ${t}`, undo: false } }); this.armToast();
+      },
+      editing: !!e, sheetTitle: e && e.isNew ? 'New habit' : 'Edit habit', saveLabel: e && e.isNew ? 'Add habit' : 'Save',
+      canDelete: !!(e && !e.isNew),
+      draftName: e ? e.name : '', err: this.state.err,
+      inputBorder: this.state.err ? 'var(--color-accent-300)' : 'var(--color-divider)',
+      onName: ev => this.setDraft({ name: ev.target.value }),
+      onKey: ev => { if (ev.key === 'Enter') this.save(); },
+      todOpts: Object.keys(TOD).map(key => {
+        const on = e && e.tod === key;
+        return { label: TOD[key].label, icon: TOD[key].icon, pick: () => this.setDraft({ tod: key }),
+          bd: on ? 'var(--color-accent)' : 'var(--color-divider)', bg: on ? 'color-mix(in srgb, var(--color-accent) 12%, transparent)' : 'transparent',
+          col: on ? 'var(--color-accent-300)' : 'var(--color-text)' };
+      }),
+      remOn, remOnStr: String(remOn),
+      toggleRem: () => this.setDraft({ rem: !remOn }),
+      swBd: remOn ? 'var(--color-accent)' : 'var(--color-neutral-700)', swBg: remOn ? 'var(--color-accent-800)' : 'var(--color-neutral-900)',
+      knobBg: remOn ? 'var(--color-accent-300)' : 'var(--color-neutral-500)', knobX: remOn ? 'translateX(20px)' : 'none',
+      draftTime: e ? this.fmt(e.time) : '',
+      timeDown: () => this.setDraft({ time: (e.time - 15 + 1440) % 1440 }),
+      timeUp: () => this.setDraft({ time: (e.time + 15) % 1440 }),
+      presets: [420, 750, 1080, 1260].map(t => {
+        const on = e && e.time === t;
+        return { label: this.fmt(t), pick: () => this.setDraft({ time: t }), bd: on ? 'var(--color-accent)' : 'var(--color-divider)', col: on ? 'var(--color-accent-300)' : 'var(--color-text)' };
+      }),
+      closeSheet: () => this.closeSheet(), save: () => this.save(), del: () => this.del(),
+      upNext: habits.slice(0, 3).map(h => ({ id: h.id, name: h.name, meta: h.rem ? this.fmt(h.time) : TOD[h.tod].label, tap: ev => this.complete(h.id, ev.currentTarget), ...collapse(!!leaving[h.id]) })),
+      upNextEmpty: total > 0 && left === 0,
+      nextRemShort: nr ? `${this.fmt(nr.time)} · ${nr.name}` : 'None set',
+      ringDash: `${(C * pctN / 100).toFixed(1)} ${C.toFixed(1)}`,
+      leftLabel: habits.length ? `${habits.length} left today` : (total ? 'All done' : 'No habits yet'),
+      bestStreak: Math.max(0, ...habits.map(h => h.streak), ...done.map(d => d.h.streak + 1)),
+      plantArt: plantArtPainted(ci.stage, ci.asleep),
+      treeChips: [['line', 'Line'], ['painted', 'Painterly']].map(([v, label]) => { const on = (this.state.treeStyle || 'line') === v; return { label, pick: () => this.setState({ treeStyle: v }), bd: on ? 'var(--color-accent)' : 'var(--color-divider)', col: on ? 'var(--color-accent-300)' : 'var(--color-text)' }; }),
+      catChips: [null, 1, 2, 3, 4, 5].map(v => {
+        const on = (this.state.catPreview ?? null) === v;
+        return { label: v ? String(STAGES[v - 1].at) : 'Auto', pick: () => this.setState({ catPreview: v }),
+          bd: on ? 'var(--color-accent)' : 'var(--color-divider)', col: on ? 'var(--color-accent-300)' : 'var(--color-text)' };
+      }),
+    };
+  }
+}
+</script>
+</body>
+</html>
