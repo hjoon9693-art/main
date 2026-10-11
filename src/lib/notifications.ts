@@ -1,4 +1,5 @@
-import * as Notifications from 'expo-notifications';
+import Constants, { ExecutionEnvironment } from 'expo-constants';
+import type * as NotificationsModule from 'expo-notifications';
 import { Platform } from 'react-native';
 
 import { completeHabit } from '@/lib/complete';
@@ -13,11 +14,17 @@ const ACTION_DONE = 'done';
 const HABIT_PREFIX = 'habit-';
 const SNOOZE_MIN = 10;
 
-const supported = Platform.OS === 'ios' || Platform.OS === 'android';
+// Expo Go on Android (SDK 53+) throws as soon as expo-notifications is imported, so the module is
+// only loaded where it works. Reminders there need a development build; the rest of the app runs as-is.
+const isAndroidExpoGo =
+  Platform.OS === 'android' && Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
+const supported = (Platform.OS === 'ios' || Platform.OS === 'android') && !isAndroidExpoGo;
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const Notifications: typeof NotificationsModule = supported ? require('expo-notifications') : (null as never);
 
 type ReminderData = { habitId?: string };
 
-function habitIdOf(n: Notifications.Notification) {
+function habitIdOf(n: NotificationsModule.Notification) {
   return (n.request.content.data as ReminderData | undefined)?.habitId;
 }
 
@@ -85,7 +92,7 @@ async function ensurePermission() {
   return next.granted;
 }
 
-function content(h: Habit): Notifications.NotificationContentInput {
+function content(h: Habit): NotificationsModule.NotificationContentInput {
   return {
     title: h.name,
     body: 'Dusk · Reminder',

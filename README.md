@@ -20,8 +20,10 @@ npx expo start          # then press i / a, or scan the QR code with Expo Go
 npx expo start --web    # browser preview
 ```
 
-Everything used ships in Expo Go, so no development build is needed to try it. For store builds use EAS
-(`npx eas-cli@latest build`).
+Everything runs in Expo Go, except reminders on **Android**: Expo Go on Android no longer includes
+`expo-notifications` (SDK 53+). There the app skips scheduling them, and everything else still works. To get
+reminders on Android, use a development build (`npx expo run:android` or `npx eas-cli@latest build --profile
+development`). iOS Expo Go supports local reminders. For store builds use EAS (`npx eas-cli@latest build`).
 
 ```bash
 npm run typecheck       # tsc --noEmit
