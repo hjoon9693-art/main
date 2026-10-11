@@ -5,7 +5,7 @@ import { useFonts } from 'expo-font';
 import { DarkTheme, Slot, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -34,9 +34,25 @@ const theme = {
 };
 
 export default function RootLayout() {
-  const [fontsLoaded] = useFonts({ Inter_400Regular, Inter_500Medium, Inter_600SemiBold });
+  const [fontsLoaded, fontError] = useFonts({ Inter_400Regular, Inter_500Medium, Inter_600SemiBold });
   const hydrated = useStore((s) => s.hydrated);
-  const ready = fontsLoaded && hydrated;
+  // Never hold the splash screen forever: if fonts or saved data stall, show the app anyway.
+  const [timedOut, setTimedOut] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => {
+      const s = useStore.getState();
+      if (!s.hydrated) {
+        console.warn('[dusk] saved data did not load in time; starting with defaults');
+        useStore.setState({ hydrated: true });
+      }
+      setTimedOut(true);
+    }, 4000);
+    return () => clearTimeout(t);
+  }, []);
+  useEffect(() => {
+    if (fontError) console.warn('[dusk] Inter failed to load, using the system font', fontError);
+  }, [fontError]);
+  const ready = (fontsLoaded || !!fontError || timedOut) && hydrated;
 
   useEffect(() => setupNotifications(), []);
   useDayRollover(hydrated);

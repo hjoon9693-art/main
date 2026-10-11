@@ -239,9 +239,14 @@ export const useStore = create<State>()(
       version: 1,
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (s): Persisted => ({ habits: s.habits, done: s.done, day: s.day, settings: s.settings }),
-      onRehydrateStorage: () => () => {
+      onRehydrateStorage: () => (_state, error) => {
+        if (error) console.warn('[dusk] could not restore saved data', error);
         useStore.setState({ hydrated: true });
-        useStore.getState().rollover();
+        try {
+          useStore.getState().rollover();
+        } catch (e) {
+          console.warn('[dusk] new-day check failed', e);
+        }
       },
     },
   ),
